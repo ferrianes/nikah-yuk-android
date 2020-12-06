@@ -6,10 +6,30 @@ const CartContext = createContext();
 
 const CartProvider = ({ children }) => {
     const [cartTotal, setCartTotal] = useState([]);
+    const [cartTotalPrice, setCartTotalPrice] = useState([]);
     const [carts, setCarts] = useState([]);
+    const [loading, setLoading] = useState(false)
+
+    useEffect(() => {
+        getCartTotal()
+        getCartTotalPrice()
+        getCart()
+    }, [])
+
+    const dispatch = async (action) => {
+        if (action.type == 'UPDATE_CART') {
+            setLoading(true)
+            await getCartTotal()
+            await getCartTotalPrice()
+            await getCart()
+            setLoading(false)
+        }
+    }
 
     const getCartTotal = async () => {
-        await Axios
+
+        try {
+            await Axios
             .get(
                 `${API_URL}jumlah_booking_temp`,
                 {
@@ -21,14 +41,42 @@ const CartProvider = ({ children }) => {
                     }
                 }
             )
-            .then(res => setCartTotal(res.data))
-            .catch(() => setCartTotal(0))
+            .then(res => {
+                setCartTotal(res.data)
+            })
+            .catch(() => {
+                setCartTotal(0)
+            })
+        } catch (e) {
+            setLoading(false)
+            Alert.alert(e.message)
+        }
     }
 
-    const dispatch = async (action) => {
-        if (action.type == 'UPDATE_CART') {
-            await getCartTotal()
-            await getCart()
+    const getCartTotalPrice = async () => {
+
+        try {
+            await Axios
+            .get(
+                `${API_URL}booking_total_temp`,
+                {
+                    params: { 
+                        id_kustomer: 35
+                    }, 
+                    headers: { 
+                        token: 'Da0sxRC4' 
+                    }
+                }
+            )
+            .then(res => {
+                setCartTotalPrice(res.data[0])
+            })
+            .catch(() => {
+                setCartTotalPrice(0)
+            })
+        } catch (e) {
+            setLoading(false)
+            Alert.alert(e.message);
         }
     }
 
@@ -48,17 +96,13 @@ const CartProvider = ({ children }) => {
                             setCarts(res.data)
                         });
         } catch (e) {
+            setLoading(false)
             Alert.alert(e.message);
         }
     }
 
-    useEffect(() => {
-        getCartTotal()
-        getCart()
-    }, [])
-
     return (
-        <CartContext.Provider value={{ cartTotal, carts, dispatch }}>
+        <CartContext.Provider value={{ cartTotal, cartTotalPrice, carts, dispatch, loading }}>
             { children }
         </CartContext.Provider>
     )

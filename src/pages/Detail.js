@@ -30,8 +30,10 @@ const Detail = ({ route }) => {
         try {
             await Axios
                 .get(`${API_URL}produk`, data)
-                .then(res => setProduct(res.data[0]));   
-            setLoading(false)
+                .then(res => {
+                    setProduct(res.data[0])
+                    setLoading(false)
+                });
         } catch (e) {
             Alert.alert(e.message);
         }
@@ -49,9 +51,10 @@ const Detail = ({ route }) => {
             try {
                 await Axios
                     .post(`${API_URL}booking_temp`, {id_kustomer, id_produk, jumlah: 1}, headers)
-                    .then(() => {
+                    .then( async () => {
+                        await value.dispatch({type: 'UPDATE_CART'})
+                        setLoading(false)
                         ToastAndroid.show("Produk sukses ditambahkan ke keranjang !", ToastAndroid.SHORT)
-                        value.dispatch({type: 'UPDATE_CART'})
                     })
             } catch (e) {
                 setLoading(false)
@@ -127,7 +130,6 @@ const Detail = ({ route }) => {
                             Alert.alert(e.response.data);
                         }
                     })
-                setLoading(false)
             } catch (e) {
                 setLoading(false)
                 Alert.alert(e.message);
@@ -237,6 +239,5 @@ const styles = StyleSheet.create({
         fontWeight: '300',
         color: '#8898aa'
     },
-    actionDetail: {
-    }
+    actionDetail: {}
 })
